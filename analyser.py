@@ -3,14 +3,11 @@ import pandas as pd
 import numpy as np
 import yfinance as yf
 import matplotlib.pyplot as plt
-from datetime import date
+from datetime import date, timedelta
 
 
-ticker = 'AAPL'
-current_year = date.today().year
-current = yf.Ticker(ticker)
-
-def execute(ticker, current_year):
+def execute(ticker, current_year, write = True):
+    current = yf.Ticker(ticker)
     #quarterly data
     cashflow = current.quarterly_cashflow
     financials = current.quarterly_financials
@@ -25,11 +22,11 @@ def execute(ticker, current_year):
     fivey_hist = current.history(period="5y")
 
     #method to get quarterly filing dates. Returns list of dates
-    file_dates = [date.today().strftime('%Y-%m-%d')]
-    for date in balance_sheet.columns.to_list():
-        while date.strftime('%Y-%m-%d') not in fivey_hist["Close"].keys():
-            date = date - pd.Timedelta(days=1)
-        file_dates.insert(0, date.strftime('%Y-%m-%d'))
+    file_dates = [(date.today()- timedelta(days = 1)).strftime('%Y-%m-%d')]
+    for day in balance_sheet.columns.to_list():
+        while day.strftime('%Y-%m-%d') not in fivey_hist["Close"].keys():
+            day = day - pd.Timedelta(days=1)
+        file_dates.insert(0, day.strftime('%Y-%m-%d'))
 
     #list of close prices at quarterly filing date
     quarterly_close_price = [fivey_hist["Close"].loc[date] for date in file_dates]
